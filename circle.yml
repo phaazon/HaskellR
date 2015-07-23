@@ -6,6 +6,14 @@ machine:
 
 dependencies:
   pre:
+    # Fix the apt-get update sources.list duplicate bug
+    - sudo rm /etc/apt/sources.list.d/google-chrome.list
+    # pin our release to Ubuntu precise
+    - sudo sh -c 'echo \'APT::Default-Release "hardy";\' >> /etc/apt/apt.conf'
+    - sudo sh -c 'echo "deb http://archive.ubuntu.com/ubuntu precise main restricted universe multiverse\ndeb http://archive.ubuntu.com/ubuntu trusty main restricted universe multiverse" >> /etc/apt/sources.list'
+    - sudo sh -c 'echo "Package: libzeromq3-dev-4.0.4\nPin: release n=trusty\nPin-Priority: 900" > /etc/apt/preferences'
+    # Finally try to install, libzmq3-dev which should now be available
+    - sudo apt-get update
     - sudo apt-get install libzmq3-dev
   override:
   - mkdir -p ~/.local/bin
