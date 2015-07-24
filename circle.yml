@@ -31,6 +31,6 @@ release n=trusty\nPin-Priority: 900\" > /etc/apt/preferences'"
 
 test:
   override:
-  - stack build --haddock --no-terminal
+  - stack build --haddock --no-terminal --ghc-options "-fPIC"
   - stack test --no-terminal
   - stack bench --no-terminal
