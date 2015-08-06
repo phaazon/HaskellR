@@ -29,7 +29,7 @@ tests = testGroup "HVal"
               return $ R.typeOf x
     , testCase "Automatic value works after release" $
       bracket getCurrentDirectory setCurrentDirectory $ const $ do
-        ((assertBool "Automatic value was collected" . isInt) =<<) $ do
+        ((assertBool "Automatic value was not collected" . isInt) =<<) $ do
            runRegion $ do
               _ <- [r| gctorture(TRUE) |]
               x <- automatic =<< io (R.allocVector SingR.SInt 1024 :: IO (R.SEXP V 'R.Int))
