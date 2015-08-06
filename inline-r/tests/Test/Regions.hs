@@ -10,6 +10,7 @@ module Test.Regions
 import           H.Prelude
 import qualified Foreign.R as R
 import           Language.R.QQ
+import qualified Data.Vector.SEXP as V
 
 import Test.Tasty hiding (defaultMain)
 import Test.Tasty.HUnit
@@ -75,4 +76,14 @@ tests = testGroup "regions"
             _ <- [r| gctorture(FALSE) |]
             return ()
           return (z::Int32)
+    , testCase "vectors-do-not-leak" $
+      preserveDirectory $
+      preserveDirectory $ assertBalancedStack $
+        runRegion $ do
+          _ <- [r| gctorture(TRUE) |]
+          x <- mkSEXP ([1::Int32])
+          z <- io $ V.fromSEXP x
+          _ <- io $ R.allocList 1
+          _ <- [r| gctorture(FALSE) |]
+          return ()
     ]
