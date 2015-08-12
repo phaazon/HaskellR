@@ -125,4 +125,8 @@ main = H.withEmbeddedR H.defaultConfig $ H.runRegion $ do
     ("c(7, 2, 3)" @=?) =<< [r| v = v1_hs; v[1] <- 7; v |]
     io $ assertEqual "" "fromList [1,2,3]" . Prelude.show =<< SVector.unsafeFreeze v1
 
+    ("1" @=?) =<< [r| x <- list(1,2); names(x) <- c("foo","bar"); x$foo |]
+    let fooName = "foo"
+    ("1" @=?) =<< [r| x <- list(1,2); names(x) <- c(fooName_hs,"bar"); x$foo |]
+
     return ()
