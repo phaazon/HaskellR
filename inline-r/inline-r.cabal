@@ -79,7 +79,7 @@ library
                      , th-lift >= 0.6
                      , th-orphans >= 0.8
                      , transformers >= 0.3
-                     , vector >= 0.10 && < 0.11
+                     , vector >= 0.10 && <= 0.12
   hs-source-dirs:      src
   includes:            cbits/Hcompat.h cbits/missing_r.h
   c-sources:           cbits/missing_r.c
@@ -191,7 +191,7 @@ benchmark bench-hexp
                      , base >= 4.6 && < 5
                      , criterion >= 0.8
                      , primitive >= 0.5
-                     , vector >= 0.10
+                     , vector >= 0.10 && <= 0.12
                      , singletons
   ghc-options:         -Wall -threaded
   hs-source-dirs:      tests

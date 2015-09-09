@@ -242,7 +242,8 @@ module Data.Vector.SEXP
   , unsafeToStorable
   ) where
 
-import Data.Vector.SEXP.Base
+import qualified Data.Vector.SEXP.Base as B
+import Data.Vector.SEXP.Base (VECTOR, ElemRep)
 import Data.Vector.SEXP.Mutable (MVector(..))
 import qualified Data.Vector.SEXP.Mutable as Mutable
 import Foreign.R ( SEXP )
@@ -252,7 +253,6 @@ import Foreign.R.Type ( SEXPTYPE(Char) )
 import Control.Monad.Primitive ( PrimMonad, PrimState )
 import Control.Monad.ST (ST)
 import qualified Data.Vector.Generic as G
-import qualified Data.Vector.Fusion.Stream as Stream
 import qualified Data.Vector.Storable as Storable
 import Data.ByteString ( ByteString )
 import qualified Data.ByteString.Unsafe as B
@@ -942,19 +942,19 @@ forM_ = G.forM_
 zipWith :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c)
         => (a -> b -> c) -> Vector s tya a -> Vector s tyb b -> Vector s tyc c
 {-# INLINE zipWith #-}
-zipWith f xs ys = G.unstream (Stream.zipWith f (G.stream xs) (G.stream ys))
+zipWith = B.zipWith
 
 -- | Zip three vectors with the given function.
 zipWith3 :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c, VECTOR s tyd d)
          => (a -> b -> c -> d) -> Vector s tya a -> Vector s tyb b -> Vector s tyc c -> Vector s tyd d
 {-# INLINE zipWith3 #-}
-zipWith3 f as bs cs = G.unstream (Stream.zipWith3 f (G.stream as) (G.stream bs) (G.stream cs))
+zipWith3 = B.zipWith3 -- G.unstream (Stream.zipWith3 f (G.stream as) (G.stream bs) (G.stream cs))
 
 zipWith4 :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c, VECTOR s tyd d, VECTOR s tye e)
          => (a -> b -> c -> d -> e)
          -> Vector s tya a -> Vector s tyb b -> Vector s tyc c -> Vector s tyd d -> Vector s tye e
 {-# INLINE zipWith4 #-}
-zipWith4 f as bs cs ds = G.unstream (Stream.zipWith4 f (G.stream as) (G.stream bs) (G.stream cs) (G.stream ds))
+zipWith4 = B.zipWith4
 
 zipWith5 :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c, VECTOR s tyd d, VECTOR s tye e,
              VECTOR s tyf f)
@@ -962,7 +962,7 @@ zipWith5 :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c, VECTOR s tyd d, VEC
          -> Vector s tya a -> Vector s tyb b -> Vector s tyc c -> Vector s tyd d -> Vector s tye e
          -> Vector s tyf f
 {-# INLINE zipWith5 #-}
-zipWith5 f as bs cs ds es = G.unstream (Stream.zipWith5 f (G.stream as) (G.stream bs) (G.stream cs) (G.stream ds) (G.stream es))
+zipWith5 = B.zipWith5
 
 zipWith6 :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c, VECTOR s tyd d, VECTOR s tye e,
              VECTOR s tyf f, VECTOR s tyg g)
@@ -970,27 +970,29 @@ zipWith6 :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c, VECTOR s tyd d, VEC
          -> Vector s tya a -> Vector s tyb b -> Vector s tyc c -> Vector s tyd d -> Vector s tye e
          -> Vector s tyf f -> Vector s tyg g
 {-# INLINE zipWith6 #-}
-zipWith6 f as bs cs ds es fs = G.unstream (Stream.zipWith6 f (G.stream as) (G.stream bs) (G.stream cs) (G.stream ds) (G.stream es) (G.stream fs))
+zipWith6 = B.zipWith6
 
 -- | /O(min(m,n))/ Zip two vectors with a function that also takes the
 -- elements' indices.
 izipWith :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c)
          => (Int -> a -> b -> c) -> Vector s tya a -> Vector s tyb b -> Vector s tyc c
 {-# INLINE izipWith #-}
-izipWith f as bs = G.unstream (Stream.zipWith (uncurry f) (Stream.indexed (G.stream as)) (G.stream bs))
+izipWith = B.izipWith
 
 -- | Zip three vectors and their indices with the given function.
 izipWith3 :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c, VECTOR s tyd d)
           => (Int -> a -> b -> c -> d)
           -> Vector s tya a -> Vector s tyb b -> Vector s tyc c -> Vector s tyd d
 {-# INLINE izipWith3 #-}
-izipWith3 f as bs cs = G.unstream (Stream.zipWith3 (uncurry f) (Stream.indexed (G.stream as)) (G.stream bs) (G.stream cs))
+izipWith3 = B.izipWith3
+
 
 izipWith4 :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c, VECTOR s tyd d, VECTOR s tye e)
           => (Int -> a -> b -> c -> d -> e)
           -> Vector s tya a -> Vector s tyb b -> Vector s tyc c -> Vector s tyd d -> Vector s tye e
 {-# INLINE izipWith4 #-}
-izipWith4 f as bs cs ds =  G.unstream (Stream.zipWith4 (uncurry f) (Stream.indexed (G.stream as)) (G.stream bs) (G.stream cs) (G.stream ds))
+izipWith4 = B.izipWith4
+
 
 izipWith5 :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c, VECTOR s tyd d, VECTOR s tye e,
               VECTOR s tyf f)
@@ -998,7 +1000,7 @@ izipWith5 :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c, VECTOR s tyd d, VE
           -> Vector s tya a -> Vector s tyb b -> Vector s tyc c -> Vector s tyd d -> Vector s tye e
           -> Vector s tyf f
 {-# INLINE izipWith5 #-}
-izipWith5 f as bs cs ds es =  G.unstream (Stream.zipWith5 (uncurry f) (Stream.indexed (G.stream as)) (G.stream bs) (G.stream cs) (G.stream ds) (G.stream es))
+izipWith5 = B.izipWith5
 
 izipWith6 :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c, VECTOR s tyd d, VECTOR s tye e,
               VECTOR s tyf f, VECTOR s tyg g)
@@ -1006,12 +1008,13 @@ izipWith6 :: (VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c, VECTOR s tyd d, VE
           -> Vector s tya a -> Vector s tyb b -> Vector s tyc c -> Vector s tyd d -> Vector s tye e
           -> Vector s tyf f -> Vector s tyg g
 {-# INLINE izipWith6 #-}
-izipWith6 f as bs cs ds es fs =  G.unstream (Stream.zipWith6 (uncurry f) (Stream.indexed (G.stream as)) (G.stream bs) (G.stream cs) (G.stream ds) (G.stream es) (G.stream fs))
+izipWith6 = B.izipWith6
 
+{-
 -- Monadic zipping
 -- ---------------
 
-{-
+
 -- | /O(min(m,n))/ Zip the two vectors with the monadic action and yield a
 -- vector of results
 zipWithM :: (Monad m, VECTOR s tya a, VECTOR s tyb b, VECTOR s tyc c)
@@ -1025,7 +1028,7 @@ zipWithM f as bs = G.unstreamM (Stream.zipWithM f (G.stream as) (G.stream bs))
 zipWithM_ :: (Monad m, VECTOR s tya a, VECTOR s tyb b)
           => (a -> b -> m c) -> Vector s tya a -> Vector s tyb b -> m ()
 {-# INLINE zipWithM_ #-}
-zipWithM_ f as bs = Stream.zipWithM_ f (G.stream as) (G.stream bs)
+zipWithM_ = B.zipWithM_
 
 -- Filtering
 -- ---------
