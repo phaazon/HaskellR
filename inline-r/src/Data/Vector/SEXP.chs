@@ -242,6 +242,7 @@ module Data.Vector.SEXP
   , unsafeToStorable
   ) where
 
+
 import qualified Data.Vector.SEXP.Base as B
 import Data.Vector.SEXP.Base (VECTOR, ElemRep)
 import Data.Vector.SEXP.Mutable (MVector(..))
@@ -293,7 +294,6 @@ import Prelude
   , fromIntegral
   , or
   , seq
-  , uncurry
   )
 import qualified Prelude
 

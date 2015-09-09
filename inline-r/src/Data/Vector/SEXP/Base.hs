@@ -15,9 +15,11 @@ import           Data.Vector.Fusion.Bundle.Monadic (sSize, sElems)
 import           Data.Vector.Fusion.Bundle.Size (Size, smaller)
 import qualified Data.Vector.Fusion.Stream.Monadic as Stream
 import           Data.Vector.Fusion.Bundle (lift)
+import           Data.Vector.Fusion.Util (Id)
 #else
 import qualified Data.Vector.Fusion.Stream as Stream
 #endif
+
 import qualified Data.Vector.Generic as G
 
 import Foreign.R.Type
@@ -52,175 +54,101 @@ type VECTOR s ty a = (Storable a, IsVector ty, SingI ty, ElemRep s ty ~ a)
 zipWith :: (G.Vector v0 a, G.Vector v1 b, G.Vector v2 c)
         => (a -> b -> c) -> v0 a -> v1 b -> v2 c
 {-# INLINE zipWith #-}
-#if MIN_VERSION_vector(0,11,0)
-zipWith f xs ys = G.unstream $ Bundle.fromStream (Stream.zipWith f (sElems xs') (sElems ys')) sz
-  where
-    xs' = G.stream xs
-    ys' = G.stream ys
-    sz  = smallest [sSize xs', sSize ys']
-#else
-zipWith f xs ys = G.unstream (Stream.zipWith f (G.stream xs) (G.stream ys))
-#endif
+zipWith f xs ys = unstream' (Stream.zipWith f (stream' xs) (stream' ys)) [size' xs, size' ys]
 
 zipWith3 :: (G.Vector v0 a, G.Vector v1 b, G.Vector v2 c, G.Vector v3 d)
          => (a -> b -> c -> d) -> v0 a -> v1 b -> v2 c -> v3 d
 {-# INLINE zipWith3 #-}
-#if MIN_VERSION_vector(0,11,0)
-zipWith3 f as bs cs = G.unstream $ Bundle.fromStream (Stream.zipWith3 f (sElems as') (sElems bs') (sElems cs')) sz
-  where
-    as' = G.stream as
-    bs' = G.stream bs
-    cs' = G.stream cs
-    sz  = smallest [sSize as', sSize bs', sSize cs']
-#else
-zipWith3 f as bs cs = G.unstream (Stream.zipWith3 f (G.stream as) (G.stream bs) (G.stream cs))
-#endif
+zipWith3 f as bs cs = unstream' (Stream.zipWith3 f (stream' as) (stream' bs) (stream' cs)) [size' as, size' bs, size' cs]
 
 zipWith4 :: (G.Vector v0 a, G.Vector v1 b, G.Vector v2 c, G.Vector v3 d,
              G.Vector v4 e)
          => (a -> b -> c -> d -> e) -> v0 a -> v1 b -> v2 c -> v3 d -> v4 e
 {-# INLINE zipWith4 #-}
-#if MIN_VERSION_vector(0,11,0)
-zipWith4 f as bs cs ds = G.unstream $ Bundle.fromStream (Stream.zipWith4 f (sElems as') (sElems bs') (sElems cs') (sElems ds')) sz
-  where
-    as' = G.stream as
-    bs' = G.stream bs
-    cs' = G.stream cs
-    ds' = G.stream ds
-    sz  = smallest [sSize as', sSize bs', sSize cs', sSize ds']
-#else
-zipWith4 f as bs cs ds = G.unstream (Stream.zipWith4 f (G.stream as) (G.stream bs) (G.stream cs) (G.stream ds))
-#endif
+zipWith4 f as bs cs ds = unstream' (Stream.zipWith4 f (stream' as) (stream' bs) (stream' cs) (stream' ds)) [size' as, size' bs, size' cs, size' ds]
 
 zipWith5 :: (G.Vector v0 a, G.Vector v1 b, G.Vector v2 c, G.Vector v3 d,
              G.Vector v4 e, G.Vector v5 f)
          => (a -> b -> c -> d -> e -> f) -> v0 a -> v1 b -> v2 c -> v3 d -> v4 e
          -> v5 f
 {-# INLINE zipWith5 #-}
-#if MIN_VERSION_vector(0,11,0)
-zipWith5 f as bs cs ds es = G.unstream $ Bundle.fromStream (Stream.zipWith5 f (sElems as') (sElems bs') (sElems cs') (sElems ds') (sElems es')) sz
-  where
-    as' = G.stream as
-    bs' = G.stream bs
-    cs' = G.stream cs
-    ds' = G.stream ds
-    es' = G.stream es
-    sz  = smallest [sSize as', sSize bs', sSize cs', sSize ds', sSize es']
-#else
-zipWith5 f as bs cs ds es = G.unstream (Stream.zipWith5 f (G.stream as) (G.stream bs) (G.stream cs) (G.stream ds) (G.stream es))
-#endif
+zipWith5 f as bs cs ds es = unstream' (Stream.zipWith5 f (stream' as) (stream' bs) (stream' cs) (stream' ds) (stream' es)) [size' as, size' bs, size' cs, size' ds, size' es]
 
 zipWith6 :: (G.Vector v0 a, G.Vector v1 b, G.Vector v2 c, G.Vector v3 d,
              G.Vector v4 e, G.Vector v5 f, G.Vector v6 g)
          => (a -> b -> c -> d -> e -> f -> g) -> v0 a -> v1 b -> v2 c -> v3 d
          -> v4 e -> v5 f -> v6 g
 {-# INLINE zipWith6 #-}
-#if MIN_VERSION_vector(0,11,0)
-zipWith6 f as bs cs ds es fs = G.unstream $ Bundle.fromStream (Stream.zipWith6 f (sElems as') (sElems bs') (sElems cs') (sElems ds') (sElems es') (sElems fs')) sz
-  where
-    as' = G.stream as
-    bs' = G.stream bs
-    cs' = G.stream cs
-    ds' = G.stream ds
-    es' = G.stream es
-    fs' = G.stream fs
-    sz  = smallest [sSize as', sSize bs', sSize cs', sSize ds', sSize es', sSize fs']
-#else
-zipWith6 f as bs cs ds es fs = G.unstream (Stream.zipWith6 f (G.stream as) (G.stream bs) (G.stream cs) (G.stream ds) (G.stream es) (G.stream fs))
-#endif
+zipWith6 f as bs cs ds es fs = unstream' (Stream.zipWith6 f (stream' as) (stream' bs) (stream' cs) (stream' ds) (stream' es) (stream' fs)) [size' as, size' bs, size' cs, size' ds, size' es, size' fs]
 
 izipWith :: (G.Vector v0 a, G.Vector v1 b, G.Vector v2 c)
          => (Int -> a -> b -> c) -> v0 a -> v1 b -> v2 c
 {-# INLINE izipWith #-}
-#if MIN_VERSION_vector(0,11,0)
-izipWith f xs ys = G.unstream $ Bundle.fromStream (Stream.zipWith (uncurry f) (Stream.indexed (sElems xs')) (sElems ys')) sz
-  where
-    xs' = G.stream xs
-    ys' = G.stream ys
-    sz  = smallest [sSize xs', sSize ys']
-#else
-izipWith f as bs = G.unstream (Stream.zipWith (uncurry f) (Stream.indexed (G.stream as)) (G.stream bs))
-#endif
+izipWith f xs ys = unstream' (Stream.zipWith (uncurry f) (Stream.indexed (stream' xs)) (stream' ys)) [size' xs, size' ys]
 
 izipWith3 :: (G.Vector v0 a, G.Vector v1 b, G.Vector v2 c, G.Vector v3 d)
           => (Int -> a -> b -> c -> d) -> v0 a -> v1 b -> v2 c -> v3 d
 {-# INLINE izipWith3 #-}
-#if MIN_VERSION_vector(0,11,0)
-izipWith3 f as bs cs = G.unstream $ Bundle.fromStream (Stream.zipWith3 (uncurry f) (Stream.indexed (sElems as')) (sElems bs') (sElems cs')) sz
-  where
-    as' = G.stream as
-    bs' = G.stream bs
-    cs' = G.stream cs
-    sz  = smallest [sSize as', sSize bs', sSize cs']
-#else
-izipWith3 f as bs cs = G.unstream (Stream.zipWith3 (uncurry f) (Stream.indexed (G.stream as)) (G.stream bs) (G.stream cs))
-#endif
+izipWith3 f as bs cs = unstream' (Stream.zipWith3 (uncurry f) (Stream.indexed (stream' as)) (stream' bs) (stream' cs)) [size' as, size' bs, size' cs]
 
 izipWith4 :: (G.Vector v0 a, G.Vector v1 b, G.Vector v2 c, G.Vector v3 d,
               G.Vector v4 e)
           => (Int -> a -> b -> c -> d -> e) -> v0 a -> v1 b -> v2 c -> v3 d
           -> v4 e
 {-# INLINE izipWith4 #-}
-#if MIN_VERSION_vector(0,11,0)
-izipWith4 f as bs cs ds = G.unstream $ Bundle.fromStream (Stream.zipWith4 (uncurry f) (Stream.indexed (sElems as')) (sElems bs') (sElems cs') (sElems ds')) sz
-  where
-    as' = G.stream as
-    bs' = G.stream bs
-    cs' = G.stream cs
-    ds' = G.stream ds
-    sz  = smallest [sSize as', sSize bs', sSize cs', sSize ds']
-#else
-izipWith4 f as bs cs ds = G.unstream (Stream.zipWith4 (uncurry f) (Stream.indexed (G.stream as)) (G.stream bs) (G.stream cs) (G.stream ds))
-#endif
+izipWith4 f as bs cs ds = unstream' (Stream.zipWith4 (uncurry f) (Stream.indexed (stream' as)) (stream' bs) (stream' cs) (stream' ds)) [size' as, size' bs, size' cs, size' ds]
 
 izipWith5 :: (G.Vector v0 a, G.Vector v1 b, G.Vector v2 c, G.Vector v3 d,
               G.Vector v4 e, G.Vector v5 f)
           => (Int -> a -> b -> c -> d -> e -> f) -> v0 a -> v1 b -> v2 c -> v3 d
           -> v4 e -> v5 f
 {-# INLINE izipWith5 #-}
-#if MIN_VERSION_vector(0,11,0)
-izipWith5 f as bs cs ds es = G.unstream $ Bundle.fromStream (Stream.zipWith5 (uncurry f) (Stream.indexed (sElems as')) (sElems bs') (sElems cs') (sElems ds') (sElems es')) sz
-  where
-    as' = G.stream as
-    bs' = G.stream bs
-    cs' = G.stream cs
-    ds' = G.stream ds
-    es' = G.stream es
-    sz  = smallest [sSize as', sSize bs', sSize cs', sSize ds', sSize es']
-#else
-izipWith5 f as bs cs ds es = G.unstream (Stream.zipWith5 (uncurry f) (Stream.indexed (G.stream as)) (G.stream bs) (G.stream cs) (G.stream ds) (G.stream es))
-#endif
+izipWith5 f as bs cs ds es = unstream' (Stream.zipWith5 (uncurry f) (Stream.indexed (stream' as)) (stream' bs) (stream' cs) (stream' ds) (stream' es)) [size' as, size' bs, size' cs, size' ds, size' es]
+
 
 izipWith6 :: (G.Vector v0 a, G.Vector v1 b, G.Vector v2 c, G.Vector v3 d,
               G.Vector v4 e, G.Vector v5 f, G.Vector v6 g)
           => (Int -> a -> b -> c -> d -> e -> f -> g) -> v0 a -> v1 b -> v2 c
           -> v3 d -> v4 e -> v5 f -> v6 g
 {-# INLINE izipWith6 #-}
-#if MIN_VERSION_vector(0,11,0)
-izipWith6 f as bs cs ds es fs = G.unstream $ Bundle.fromStream (Stream.zipWith6 (uncurry f) (Stream.indexed (sElems as')) (sElems bs') (sElems cs') (sElems ds') (sElems es') (sElems fs')) sz
-  where
-    as' = G.stream as
-    bs' = G.stream bs
-    cs' = G.stream cs
-    ds' = G.stream ds
-    es' = G.stream es
-    fs' = G.stream fs
-    sz  = smallest [sSize as', sSize bs', sSize cs', sSize ds', sSize es', sSize fs']
-#else
-izipWith6 f as bs cs ds es fs = G.unstream (Stream.zipWith6 (uncurry f) (Stream.indexed (G.stream as)) (G.stream bs) (G.stream cs) (G.stream ds) (G.stream es) (G.stream fs))
-#endif
+izipWith6 f as bs cs ds es fs = unstream' (Stream.zipWith6 (uncurry f) (Stream.indexed (stream' as)) (stream' bs) (stream' cs) (stream' ds) (stream' es) (stream' fs)) [size' as, size' bs, size' cs, size' ds, size' es, size' fs]
 
+zipWithM_ :: (G.Vector v0 a, G.Vector v1 b, Monad m)
+          => (a -> b -> m c)
+          -> v0 a -> v1 b -> m ()
 {-# INLINE zipWithM_ #-}
 #if MIN_VERSION_vector(0,11,0)
-zipWithM_ f as bs = Stream.zipWithM_ f (sElems $ lift as') (sElems $ lift bs')
-  where
-    as' = G.stream as
-    bs' = G.stream bs
+zipWithM_ f as bs = Stream.zipWithM_ f (sElems . lift $ G.stream as) (sElems . lift $ G.stream bs)
 #else
 zipWithM_ f as bs = Stream.zipWithM_ f (G.stream as) (G.stream bs)
 #endif
 
 -- * Helpers
+
+#if MIN_VERSION_vector(0,11,0)
+stream' :: G.Vector v a => v a -> Stream.Stream Id a
+stream' = sElems . G.stream
+#else
+stream' :: G.Vector v a => v a -> Stream.Stream a
+stream' = G.stream
+#endif
+
+#if MIN_VERSION_vector(0,11,0)
+unstream' :: G.Vector v a => Stream.Stream Id a -> [Size] -> v a
+unstream' str sz = G.unstream . Bundle.fromStream str $ smallest sz
+#else
+unstream' :: G.Vector v a => Stream.Stream a -> t -> v a
+unstream' str _sz = G.unstream str
+#endif
+
+#if MIN_VERSION_vector(0,11,0)
+size' :: G.Vector v a => v a -> Size
+size' = sSize . G.stream
+#else
+size' :: a -> ()
+size' = const ()
+#endif
+
 #if MIN_VERSION_vector(0,11,0)
 smallest :: [Size] -> Size
 smallest = foldl1 smaller
